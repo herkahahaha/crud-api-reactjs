@@ -1,0 +1,92 @@
+body {
+  margin: 0;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
+    "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background: #cfb028;
+
+}
+
+.App {
+  background: #9c8310;
+  color: #ffff;
+  max-width: 700px;
+  margin: 20px auto;
+  text-align: center;
+  width: 90%;
+}
+
+.navbar {
+  padding: 5px;
+  text-align: center;
+  background: #e2c649;
+}
+
+.navbar h1 {
+  margin: 10px 0;
+}
+
+.book-list {
+  margin: 20px;
+}
+
+.book-list ul {
+  padding: 0;
+  list-style-type: none;
+}
+
+.book-list li {
+  background: #dabe45;
+  border-radius: 4px;
+  padding: 10px;
+  cursor: pointer;
+  margin: 10px auto;
+}
+
+.book-list li:hover {
+  opacity: 0.7;
+  text-decoration: line-through;
+}
+
+.book-list .title {
+  font-weight: bold;
+  color: #ffff;
+  font-size: 1.2em;
+}
+
+.book-list .author {
+  color: #e9e8e8;
+  font-size: 0.9em;
+}
+
+.empty {
+  margin: 20px;
+  text-align: center;
+}
+
+form {
+  padding: 20px;
+}
+
+input[type='text'] {
+  width: 100%;
+  padding: 10px;
+  box-sizing: border-box;
+  margin: 6px 0;
+  background: #c0a633;
+  color: #ffff;
+  border: 0;
+}
+
+input[type='submit'] {
+  width: 100%;
+  padding: 6px 20px;
+  box-sizing: border-box;
+  margin: 10px auto;
+  background: #eee;
+  display: block;
+  border: 0;
+}
