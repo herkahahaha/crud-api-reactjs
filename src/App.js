@@ -4,6 +4,7 @@ import axios from "axios";
 class App extends React.Component {
   state = {
     dataApi: [],
+    editData: false,
     dataPost: {
       id: 0,
       title: "",
@@ -11,11 +12,12 @@ class App extends React.Component {
     }
   };
 
+  // Mengambil seluruh data yang ada didalam database
   getData = () => {
-    // GET data
     axios.get("http://localhost:3003/posts").then(res =>
       this.setState({
-        dataApi: res.data.slice(0, 10)
+        dataApi: res.data.slice(0, 10),
+        editData: false
       })
     );
   };
@@ -33,8 +35,10 @@ class App extends React.Component {
   addData = e => {
     // duplikat data state
     let newDataPost = { ...this.state.dataPost };
-    // membuat id dinamis dengan get time
-    newDataPost["id"] = new Date().getTime();
+    if (this.state.editData === false) {
+      // membuat id dinamis dengan get time
+      newDataPost["id"] = new Date().getTime();
+    }
     // input data dinamis
     newDataPost[e.target.name] = e.target.value;
 
@@ -48,6 +52,7 @@ class App extends React.Component {
     );
   };
 
+  // membuat fungsi global membersihkan input
   clearData = () => {
     let newDataPost = { ...this.state.dataPost };
     newDataPost["id"] = "";
@@ -58,34 +63,62 @@ class App extends React.Component {
     });
   };
 
+  // fungsi mengirimkan input data baru kedalam state
   handleSubmit = () => {
-    // axios("alamat url", data yang dikirmkan).then(kembalikan data baru)
-    axios
-      .post(`http://localhost:3003/posts`, this.state.dataPost)
-      .then(() => this.getData());
+    if (this.state.editData === false) {
+      // axios("alamat url", data yang dikirmkan).then(kembalikan data baru)
+      axios
+        .post(`http://localhost:3003/posts`, this.state.dataPost)
+        .then(() => {
+          this.getData();
+          this.clearData();
+        });
+    } else {
+      axios
+        .put(
+          `http://localhost:3003/posts/${this.state.dataPost.id}`,
+          this.state.dataPost
+        )
+        .then(() => {
+          this.clearData();
+          this.getData();
+        });
+    }
   };
 
+  // Fungsi Hapus Data
   handleRemove = e => {
-    // Delete Data
     console.log(e.target.value);
     fetch(`http://localhost:3003/posts/${e.target.value}`, {
       method: "DELETE"
     }).then(res => this.getData());
   };
 
+  // Fungsi Edit data yang sudah ada
+  editDataId = e => {
+    axios.get(`http://localhost:3003/posts/${e.target.value}`).then(res => {
+      this.setState({
+        dataPost: res.data,
+        editData: true
+      });
+    });
+  };
+
   render() {
     return (
       <div className="App">
-        <h1>Belajar API</h1>
+        <h1>Belajar CRUD dan API</h1>
         <section>
           <input
             type="text"
+            value={this.state.dataPost.title}
             placeholder="Tambahkan Title"
             name="title"
             onChange={this.addData}
           />
           <input
             type="text"
+            value={this.state.dataPost.body}
             placeholder="Tambahkan body"
             name="body"
             onChange={this.addData}
@@ -102,7 +135,9 @@ class App extends React.Component {
               <button value={data.id} onClick={this.handleRemove}>
                 Delete
               </button>
-              <button value={data.id}>Edit Data</button>
+              <button value={data.id} onClick={this.editDataId}>
+                Edit Data
+              </button>
             </div>
           );
         })}

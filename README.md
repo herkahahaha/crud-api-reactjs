@@ -1,153 +1,126 @@
-# HOOKS Reactjs
+# Reactjs Play CRUD
 
-## Intro
-
-> Reactjs di 2019, maksimal dengan menggunakan Context Api dan High Order Component dalam pendistribusian data setiap component, serta 90% clean code.
-> namun ini dalam bentuk OPTIONAL/pilihan.
-
-info lebih lanjut:<br/>
-
-- [reactjs](https://reactjs.org/docs/hooks-intro.html)<br/>
-- [id.reactjs](https://id.reactjs.org/docs/hooks-intro.html)
-
-## Study Kasus
-
-### Book-App
+> Contoh pembelajaran melakukan metode Create Update Delete (CRUD) di Reactjs dengan bantuan API dummy dan database lokal secara realtime dengan bantuan _JSON Server_.
 
 ```
-branch: master (full)
-branch: starter (basic)
-branch: custom (next level)
-        |--- useReducer
-        |--- useEffect
-        |--- saving data in localstorage
+ReactJs Versi Class Component
+
+branch: react-api
 ```
 
-**reducer**<br/>
+### Persiapan
 
-- bookReducer.js <br/>
-  sebagai file yang menampung fungsi create dan delete data yg sebelumnya di file bookContext.js didalam folder context
+1. API dummy/fake : https://jsonplaceholder.typicode.com/ atau kunjungi [source code berikut](https://github.com/typicode/json-server)
 
-```js
-// add reducer
-import uuid from "uuid/v1";
+install JSON Server untuk menggunakan lokal API secara Realtime
 
-export const bookReducer = (state, action) => {
-  switch (action.type) {
-    // add
-    case "ADD_BOOK":
-      return [
-        ...state,
-        {
-          title: action.book.title,
-          author: action.book.author,
-          id: uuid()
-        }
-      ];
-    // delete
-    case "REMOVE_BOOK":
-      return state.filter(book => book.id !== action.id);
-    default:
-      return state;
+```sh
+npm install -g json-server
+```
+
+2. install package axios (optional)
+
+```sh
+npm i --save axios
+```
+
+<hr/>
+
+## API GET
+
+1. Penggunaan Fake API ditempatkan didalam `componentDidMount` agar datanya dapat terambil terlebih dahulu sebelum componen file jsx ter-render
+
+```jsx
+componentDidMount = () => {
+  fetch("https://jsonplaceholder.typicode.com/posts")
+    .then(response => response.json())
+    .then(res => console.log(res.data));
+};
+```
+
+2. Kemudian lakukan `inspect element` dan pilih tab `console` pada jendela browser, akan didapati data yang terambil dari fake API tersebut dalam bentuk _Array of Object_
+
+3. Menampilkan data yang didapatkan dari fake API, dengan menggunakan method looping dengan `map()` dan menambahkan `state` berbentuk _array_ untuk menampung perubahan data baru
+
+```jsx
+state = {
+  dataApi: []
+};
+
+componentDidMount = () => {
+  fetch("https://jsonplaceholder.typicode.com/posts")
+    .then(response => response.json())
+    .then(res =>
+      // melakukan perubahan data state baru
+      this.setState({
+        dataApi: res.data.slice(0, 10)
+      })
+    );
+};
+```
+
+```jsx
+...
+render() {
+    return (
+      <div className="App">
+        <h1>Belajar CRUD dan API</h1>
+        {this.state.dataApi.map((data, index) => {
+          return (
+            <div key={index}>
+              <h4> {data.title} </h4>
+              <p>{data.body}</p>
+            </div>
+          );
+        })}
+      </div>
+    );
   }
+```
+
+## API DELETE
+
+1. Menambahkan method hapus data dan tombol hapus, namun ini tidak berfungsi menghapus data dari server fake API yang kita gunakan
+
+```jsx
+handleRemove = e => {
+  console.log(e.target.value);
+  fetch(`https://jsonplaceholder.typicode.com/posts/${e.target.value}`, {
+    method: "DELETE"
+  }).then(res => console.log(res));
 };
+
+render() {
+    return (
+      <div className="App">
+        <h1>Belajar CRUD dan API</h1>
+        {this.state.dataApi.map((data, index) => {
+          return (
+            <div key={index}>
+              <h4> {data.title} </h4>
+              <p>{data.body}</p>
+              {/* Penambahaan Button hapus */}
+              <button value={data.id} onClick={this.handleRemove}>
+                Delete
+              </button>
+            </div>
+          );
+        })}
+      </div>
+    );
+  }
 ```
 
-**Context**<br/>
+## API POST & PUT
 
-- bookContext.js (before)
+Penggunaan method POST dan PUT, dapat dilakukan dengan menggunakan database statis, dan dengan bantuan `JSON Server` agar perubahan dan penambahan data dapat secara realtime.
 
-```js {4}
-import React, { createContext, useState } from "react";
+#### Tahapan Selanjutnya
 
-export const BookContext = createContext();
+1. Buat Database Statis dengan extensi `.json` didalam root file
 
-const BookContextProvider = props => {
-  const [books, setBooks] = useState([
-    { title: "teman hidup", author: "andaru intan", id: 1 },
-    { title: "tuhan maha asyik", author: "sujiwo tejo", id: 2 }
-  ]);
-  const addBook = (title, author) => {
-    setBooks([...books, { title, author, id: 4 }]);
-  };
-  const removeBook = id => {
-    setBooks(books.filter(book => book.id !== id));
-  };
-  return (
-    <BookContext.Provider value={{ books, addBook, removeBook }}>
-      {props.children}
-    </BookContext.Provider>
-  );
-};
-export default BookContextProvider;
-```
+2. jalankan terminal untuk menggunakan JSON Server
 
-- bookContext.js (after)
+3. Menambahkan fungsi POST dan PUT
 
-```js
-import React, { createContext, useReducer, useEffect } from "react";
-import { bookReducer } from "../reducer/bookReducer";
-
-export const BookContext = createContext();
-
-const BookContextProvider = props => {
-  // here we go to use dispatch from reducer
-  const [books, dispatch] = useReducer(bookReducer, [], () => {
-    // add saving data in our browser
-    const localData = localStorage.getItem("books");
-    return localData ? JSON.parse(localData) : [];
-  });
-  useEffect(() => {
-    // render data to our localstorage
-    localStorage.setItem("books", JSON.stringify(books));
-  }, [books]);
-  return (
-    <BookContext.Provider value={{ books, dispatch }}>
-      {props.children}
-    </BookContext.Provider>
-  );
-};
-export default BookContextProvider;
-```
-
-**add dispatch methode**<br/>
-
-- NewBook.js
-
-```js
-const NewBook = () => {
-  // here
-  const { dispatch } = useContext(BookContext);
-  const [title, setTitle] = useState("");
-  const [author, setAuthor] = useState("");
-  const handleSubmit = e => {
-    e.preventDefault();
-    // here
-    dispatch({ type: "ADD_BOOK", book: { title, author } });
-    setTitle("");
-    setAuthor("");
-  };
-```
-
-- bookDetails
-
-```js
-import React, { useContext } from "react";
-import { BookContext } from "../context/bookContext";
-
-// parsing props book
-const BookDetails = ({ book }) => {
-  // here
-  const { dispatch } = useContext(BookContext);
-  return (
-    //here
-    <li onClick={() => dispatch({ type: "REMOVE_BOOK", id: book.id })}>
-      <div className="title">{book.title}</div>
-      <div className="author">{book.author}</div>
-    </li>
-  );
-};
-export default BookDetails;
-```
-
-> merupakan contoh kecil penerapan Context API kepada components yg membuthkan dengan menggunakan HOOKS.
+kunjungi [artikel ini](https://herkahahaha.com) untuk contoh cara penerapan fungsi CRUD selengkapnya.
